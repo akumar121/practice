@@ -1,0 +1,60 @@
+CC=gcc
+CFLAGS ?= -I. # standard variable,without this implicit rule don't add -I. and fails compilation for local header file
+
+OBJECTS= $(addprefix $(OBJDIR)/,file1.o file2.o file3.o)
+FLAGS= -c 
+
+
+.DELLETE_ON_ERROR:a.out
+
+OBJDIR:= objdir
+
+all:a.out 
+a.out:$(OBJECTS) 
+	gcc -o a.out $(OBJECTS)
+
+objdir/file3.o:file3.c
+	gcc $(FLAGS) $(CFLAGS) -o $@ file3.c
+	@echo print variable $(MAKE_VERSION)
+
+objdir/file2.o:file2.c
+	gcc $(FLAGS) $(CFLAGS) -o $@ file2.c
+
+objdir/file1.o:file1.c
+	gcc $(FLAGS) $(CFLAGS) -o $@ file1.c
+
+objdir/file%.o:file%.c
+	gcc $(FLAGS) $(CFLAGS) -o $@ file$*.c
+
+$(OBJECTS): | create
+
+create:
+	mkdir -p $(OBJDIR)
+
+#print any makefile variable
+print-%: 
+	@echo '$*=$($*)'
+
+
+clean:
+	rm *.o
+	rm a.out 
+
+.SECONDEXPANSION:
+VAR1=one
+first:$(VAR1)  #it will be one
+second:$$(VAR1)  #it will be three
+VAR1=two
+VAR1=three
+
+
+.SECONDEXPANSION:
+main_OBJS := file1.o
+lib_OBJS := file1.o file2.o
+#main lib: $($@_OBJS)
+main lib: $$($$@_OBJS)
+
+
+
+
+
